@@ -1,26 +1,25 @@
 import collections, wave, logging, os, datetime
 import pyaudio
 import webrtcvad
-
-try:
-    import queue
-except ImportError:
-    # python 2
-    import Queue as queue
+import queue
 
 
 class Audio(object):
-    """Streams raw audio from microphone. Data is received in a separate thread, and stored in a buffer, to be read from."""
+    """
+    Streams raw audio from microphone.
+    Data is received in a separate thread, and stored in a buffer, to be read from.
+    """
 
     FORMAT = pyaudio.paInt16
-    RATE = 16000
+    RATE = 48000
     CHANNELS = 1
-    BLOCKS_PER_SECOND = 50
+    BLOCKS_PER_SECOND = 150
 
     def __init__(self, callback=None, buffer_s=0, flush_queue=True):
         def proxy_callback(in_data, frame_count, time_info, status):
             callback(in_data)
             return (None, pyaudio.paContinue)
+
         if callback is None: callback = lambda in_data: self.buffer_queue.put(in_data, block=False)
         self.sample_rate = self.RATE
         self.flush_queue = flush_queue

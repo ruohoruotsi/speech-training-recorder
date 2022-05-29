@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 
 import argparse, datetime, logging, math, os, os.path, random, re, sys
-
-try:
-    import winsound
-except Exception as e:
-    logging.warning("sound output only supported on Windows")
+import sounddevice as sd
+import soundfile as sf
 
 from PySide2.QtGui import QGuiApplication, QFontDatabase
 from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
 from PySide2.QtCore import Qt, QUrl, QObject, Property, Signal, Slot
 
 import audio
+import threading
+
+event = threading.Event()
+current_frame = 0
 
 class Recorder(QObject):
     """docstring for Recorder"""
@@ -62,7 +63,30 @@ class Recorder(QObject):
 
     @Slot(str)
     def playFile(self, filename):
-        winsound.PlaySound(filename, winsound.SND_FILENAME)
+        # winsound.PlaySound(filename, winsound.SND_FILENAME)
+
+        try:
+            data, fs = sf.read(filename, always_2d=True)
+
+            def callback(outdata, frames, time, status):
+                global current_frame
+                if status:
+                    print(status)
+                chunksize = min(len(data) - current_frame, frames)
+                outdata[:chunksize] = data[current_frame:current_frame + chunksize]
+                if chunksize < frames:
+                    outdata[chunksize:] = 0
+                    raise sd.CallbackStop()
+                current_frame += chunksize
+
+            stream = sd.OutputStream(samplerate=fs, device=1, channels=data.shape[1],
+                                     callback=callback, finished_callback=event.set)
+            with stream:
+                event.wait()  # Wait until playback is finished
+        except KeyboardInterrupt:
+            exit('\nInterrupted by user')
+        except Exception as e:
+            exit(type(e).__name__ + ': ' + str(e))
 
     @Slot(str)
     def deleteFile(self, filename):

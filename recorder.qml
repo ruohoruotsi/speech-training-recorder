@@ -7,7 +7,7 @@ import QtMultimedia 5.8
 Window {
     id: root
     visible: true
-    width: 800; height: 400
+    width: 1200; height: 800
     color: "#aaa"
     title: qsTr("Recorder")
 
@@ -66,15 +66,15 @@ Window {
 
                 delegate: Item {
                     width: parent.width - 20
-                    height: 30
+                    height: 50
                     Column {
                         Text {
                             text: script
-                            font.pointSize: 10
+                            font.pointSize: 18
                         }
                         Text {
                             text: 'Filename: ' + filename
-                            font.pointSize: 8
+                            font.pointSize: 16
                         }
                     }
                     MouseArea {
@@ -87,7 +87,7 @@ Window {
 
         CheckBox {
             Layout.fillWidth: true
-            font.pointSize: 14
+            font.pointSize: 18
             text: 'Filter all punctuation (only speak normal words!)'
             checked: true
             enabled: false
@@ -95,7 +95,7 @@ Window {
 
         TextArea {
             Layout.fillWidth: true
-            font.pointSize: 14
+            font.pointSize: 18
             wrapMode: TextEdit.Wrap
             readOnly: true
             text: scriptText
@@ -108,7 +108,7 @@ Window {
         Button {
             Layout.fillWidth: true
             Layout.preferredHeight: 60
-            font.pointSize: 16
+            font.pointSize: 18
             highlighted: recording
             text: recording ? "Stop" : "Start"
             onClicked: {
@@ -125,7 +125,7 @@ Window {
         RowLayout {
             Button {
                 Layout.fillWidth: true
-                font.pointSize: 14
+                font.pointSize: 18
                 text: "Play"
                 enabled: scriptFilename
                 highlighted: playFile.playbackState == playFile.PlayingState
@@ -142,7 +142,7 @@ Window {
 
             Button {
                 Layout.fillWidth: true
-                font.pointSize: 14
+                font.pointSize: 18
                 text: "Delete"
                 enabled: scriptFilename
                 onClicked: recorder.deleteFile(scriptFilename)
@@ -150,7 +150,7 @@ Window {
 
             Button {
                 Layout.fillWidth: true
-                font.pointSize: 14
+                font.pointSize: 18
                 text: recording ? "Cancel" : "Next"
                 onClicked: {
                     if (recording) {
