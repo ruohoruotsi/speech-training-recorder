@@ -196,6 +196,7 @@ def main():
     res = app.exec_()
     sys.exit(res)
 
+
 if __name__ == '__main__':
     logging.basicConfig(level=10)
     main()
