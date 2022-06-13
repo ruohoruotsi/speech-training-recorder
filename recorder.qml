@@ -95,12 +95,12 @@ Window {
 
         TextArea {
             Layout.fillWidth: true
-            font.pointSize: 18
+            font.pointSize: 24
             wrapMode: TextEdit.Wrap
             readOnly: true
             text: scriptText
             background: Rectangle {
-                border.width: 3
+                border.width: 5
                 border.color: recording ? "#2b2" : "#b22"
             }
         }

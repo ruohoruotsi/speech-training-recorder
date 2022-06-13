@@ -1,27 +1,40 @@
 #!/usr/bin/env python3
 
-import argparse, datetime, logging, math, os, os.path, random, re, sys
+import argparse
+import datetime
+import logging
+import math
+import os
+import os.path
+import random
+import re
+import sys
+import threading
+
 import sounddevice as sd
 import soundfile as sf
-
-from PySide2.QtGui import QGuiApplication, QFontDatabase
-from PySide2.QtQml import QQmlApplicationEngine, qmlRegisterType
-from PySide2.QtCore import Qt, QUrl, QObject, Property, Signal, Slot
+from PySide2.QtCore import QObject, Slot
+from PySide2.QtGui import QGuiApplication
+from PySide2.QtQml import QQmlApplicationEngine
 
 import audio
-import threading
+import shortuuid
 
 event = threading.Event()
 current_frame = 0
+
 
 class Recorder(QObject):
     """docstring for Recorder"""
 
     def __init__(self, save_dir, prompts_filename, ordered=False, prompts_count=100, prompt_len_soft_max=None):
         super(Recorder, self).__init__()
+        self.scriptModel = None
+        self.speaker_id = None
         if not os.path.isdir(save_dir): raise Exception("save_dir '%s' is not a directory" % save_dir)
         self.save_dir = save_dir
-        if not os.path.isfile(prompts_filename): raise Exception("prompts_filename '%s' is not a file" % prompts_filename)
+        if not os.path.isfile(prompts_filename): raise Exception(
+            "prompts_filename '%s' is not a file" % prompts_filename)
         self.prompts_filename = prompts_filename
         self.prompts_count = prompts_count
         self.prompt_len_soft_max = prompt_len_soft_max
@@ -34,8 +47,13 @@ class Recorder(QObject):
         self.window.setProperty('saveDir', self.save_dir)
         self.scriptModel = scriptModel
         self.window.setProperty('promptsName', os.path.splitext(os.path.basename(self.prompts_filename))[0])
-        for script in self.get_scripts_from_file(self.prompts_count, self.prompts_filename, self.ordered, split_len=self.prompt_len_soft_max):
+        for script in self.get_scripts_from_file(self.prompts_count, self.prompts_filename, self.ordered,
+                                                 split_len=self.prompt_len_soft_max):
             self.window.appendScript({'script': script, 'filename': ''})
+
+        if self.speaker_id is None:
+            self.speaker_id = ""
+        self.speaker_id += str(shortuuid.uuid()[:16])
 
     @Slot(bool)
     def toggleRecording(self, recording):
@@ -53,22 +71,24 @@ class Recorder(QObject):
         data = self.read_audio(drop_last=3)
         if self.window.property('scriptFilename'):
             self.deleteFile(self.window.property('scriptFilename'))
-        filename = os.path.normpath(os.path.join(self.window.property('saveDir'), "recorder_" + datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S_%f") + ".wav"))
+        filename = os.path.normpath(os.path.join(self.window.property('saveDir'),
+                                                 "recorder_" + datetime.datetime.now().strftime(
+                                                     "%Y-%m-%d_%H-%M-%S_%f") + ".wav"))
         self.window.setProperty('scriptFilename', filename)
         self.audio.write_wav(filename, data)
         scriptText = self.window.property('scriptText')
+        print(self.speaker_id)
         with open(os.path.join(self.window.property('saveDir'), "recorder.tsv"), "a") as xsvfile:
-            xsvfile.write('\t'.join([filename, '0', self.window.property('promptsName'), '', self.sanitize_script(scriptText)]) + '\n')
+            xsvfile.write('\t'.join(
+                [filename, self.speaker_id, self.window.property('promptsName'), '', self.sanitize_script(scriptText)]) + '\n')
         logging.debug("wrote %s to %s", len(data), filename)
 
     @Slot(str)
     def playFile(self, filename):
-        # winsound.PlaySound(filename, winsound.SND_FILENAME)
-
         try:
             data, fs = sf.read(filename, always_2d=True)
 
-            def callback(outdata, frames, time, status):
+            def callback(outdata, frames, status):
                 global current_frame
                 if status:
                     print(status)
@@ -157,7 +177,7 @@ class Recorder(QObject):
         # print(script)
         regex = re.compile(r'\s+')
         for i in range(n):
-            match = regex.search(script, pos=startpos+split_len)
+            match = regex.search(script, pos=startpos + split_len)
             endpos = match.start() if match else None
             scripts.append(script[startpos:endpos].strip())
             # print(startpos, endpos, scripts)
@@ -165,9 +185,10 @@ class Recorder(QObject):
             startpos = endpos
         return scripts
 
+
 def main():
     current_path = os.path.abspath(os.path.dirname(__file__))
-    qml_file = os.path.join(current_path, os.path.splitext(__file__)[0]+'.qml')
+    qml_file = os.path.join(current_path, os.path.splitext(__file__)[0] + '.qml')
 
     parser = argparse.ArgumentParser(description='''
         Given a text file containing prompts, this app will choose a random selection
@@ -176,10 +197,13 @@ def main():
         respectively.
     ''')
     parser.add_argument('-p', '--prompts_filename', help='file containing prompts to choose from')
-    parser.add_argument('-d', '--save_dir', default='../audio_data', help='where to save .wav & recorder.tsv files (default: %(default)s)')
-    parser.add_argument('-c', '--prompts_count', type=int, default=100, help='number of prompts to select and display (default: %(default)s)')
+    parser.add_argument('-d', '--save_dir', default='../audio_data',
+                        help='where to save .wav & recorder.tsv files (default: %(default)s)')
+    parser.add_argument('-c', '--prompts_count', type=int, default=100,
+                        help='number of prompts to select and display (default: %(default)s)')
     parser.add_argument('-l', '--prompt_len_soft_max', type=int)
-    parser.add_argument('-o', '--ordered', action='store_true', default=False, help='present prompts in order, as opposed to random (default: %(default)s)')
+    parser.add_argument('-o', '--ordered', action='store_true', default=False,
+                        help='present prompts in order, as opposed to random (default: %(default)s)')
     args = parser.parse_args()
     assert args.prompts_filename
 
@@ -187,7 +211,7 @@ def main():
     app = QGuiApplication(sys.argv)
     engine = QQmlApplicationEngine()
     engine.addImportPath(current_path)
-    kwargs = { k: v for k, v in vars(args).items() if v is not None and k in 'prompts_count prompt_len_soft_max'.split() }
+    kwargs = {k: v for k, v in vars(args).items() if v is not None and k in 'prompts_count prompt_len_soft_max'.split()}
     recorder = Recorder(args.save_dir, args.prompts_filename, args.ordered, **kwargs)
     engine.rootContext().setContextProperty('recorder', recorder)
     engine.load(qml_file)
