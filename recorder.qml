@@ -9,13 +9,14 @@ Window {
     visible: true
     width: 1200; height: 800
     color: "#aaa"
-    title: qsTr("Recorder")
+    title: qsTr("Yorùbá Voice Recorder")
 
     property bool recording: false
     property string promptsName: ''
     property string scriptText: ''
     property string scriptFilename: ''
     property string saveDir: '.'
+    property string speakerName: ''
 
     Component.onCompleted: initTimer.start()
     Timer {
@@ -85,12 +86,26 @@ Window {
             }
         }
 
-        CheckBox {
-            Layout.fillWidth: true
-            font.pointSize: 18
-            text: 'Filter all punctuation (only speak normal words!)'
-            checked: true
-            enabled: false
+        RowLayout {
+            CheckBox {
+                Layout.fillWidth: true
+                font.pointSize: 18
+                text: 'Filter all punctuation (only speak normal words!)'
+                checked: true
+                enabled: false
+            }
+
+            Text {
+                 text: 'Enter Speaker Name: '
+                       font.pointSize: 18
+            }
+            TextField {
+                placeholderText: qsTr("Àrẹ̀mú")
+                onAccepted: {
+                    console.log("Speaker Name is: " + text)
+                    recorder.acceptSpeakerNameText(text)
+                }
+            }
         }
 
         TextArea {

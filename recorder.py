@@ -51,10 +51,6 @@ class Recorder(QObject):
                                                  split_len=self.prompt_len_soft_max):
             self.window.appendScript({'script': script, 'filename': ''})
 
-        if self.speaker_id is None:
-            self.speaker_id = ""
-        self.speaker_id += str(shortuuid.uuid()[:16])
-
     @Slot(bool)
     def toggleRecording(self, recording):
         logging.debug('toggleRecording: recording is now %s', recording)
@@ -120,6 +116,13 @@ class Recorder(QObject):
                         xsvfile_out.write(line)
         os.replace(xsvfile_out_path, xsvfile_in_path)
         self.window.setProperty('scriptFilename', '')
+
+    @Slot(str)
+    def acceptSpeakerNameText(self, speakerName):
+        self.speaker_id = speakerName
+        if self.speaker_id is None:
+            self.speaker_id = "UNNAMED_SPEAKER"
+        self.speaker_id = self.speaker_id + "_" + str(shortuuid.uuid()[:16])
 
     def read_audio(self, drop_last=None):
         blocks = []
