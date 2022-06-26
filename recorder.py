@@ -31,6 +31,7 @@ class Recorder(QObject):
         super(Recorder, self).__init__()
         self.scriptModel = None
         self.speaker_id = None
+        self.speaker_name = None
         if not os.path.isdir(save_dir): raise Exception("save_dir '%s' is not a directory" % save_dir)
         self.save_dir = save_dir
         if not os.path.isfile(prompts_filename): raise Exception(
@@ -73,6 +74,10 @@ class Recorder(QObject):
         self.window.setProperty('scriptFilename', filename)
         self.audio.write_wav(filename, data)
         scriptText = self.window.property('scriptText')
+
+        # Double check speaker name and
+        if self.speaker_id is None or self.speaker_id.isspace() or self.speaker_id == "":
+            self.speaker_id = "UNNAMED_SPEAKER"
         print(self.speaker_id)
         with open(os.path.join(self.window.property('saveDir'), "recorder.tsv"), "a") as xsvfile:
             xsvfile.write('\t'.join(
@@ -119,10 +124,11 @@ class Recorder(QObject):
 
     @Slot(str)
     def acceptSpeakerNameText(self, speakerName):
-        self.speaker_id = speakerName
-        if self.speaker_id is None:
-            self.speaker_id = "UNNAMED_SPEAKER"
-        self.speaker_id = self.speaker_id + "_" + str(shortuuid.uuid()[:16])
+        print("acceptSpeakerNameText Slot")
+        self.speaker_name = speakerName
+        if self.speaker_name is None or self.speaker_name.isspace() or self.speaker_name == "":
+            self.speaker_name = "UNNAMED_SPEAKER"
+        self.speaker_id = self.speaker_name + "_" + str(shortuuid.uuid()[:16])
 
     def read_audio(self, drop_last=None):
         blocks = []

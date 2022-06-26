@@ -8,7 +8,7 @@ Window {
     id: root
     visible: true
     width: 1200; height: 800
-    color: "#aaa"
+    color: "#f5f5f6"
     title: qsTr("Yorùbá Voice Recorder")
 
     property bool recording: false
@@ -16,7 +16,6 @@ Window {
     property string scriptText: ''
     property string scriptFilename: ''
     property string saveDir: '.'
-    property string speakerName: ''
 
     Component.onCompleted: initTimer.start()
     Timer {
@@ -72,10 +71,13 @@ Window {
                         Text {
                             text: script
                             font.pointSize: 18
+                            // color: "#ffffff"
                         }
                         Text {
                             text: 'Filename: ' + filename
-                            font.pointSize: 16
+                            font.pointSize: 14
+                            // color: "#ffffff"
+                            // font.bold: true
                         }
                     }
                     MouseArea {
