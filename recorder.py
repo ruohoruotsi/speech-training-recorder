@@ -206,7 +206,7 @@ def main():
         respectively.
     ''')
     parser.add_argument('-p', '--prompts_filename', help='file containing prompts to choose from')
-    parser.add_argument('-d', '--save_dir', default='../audio_data',
+    parser.add_argument('-d', '--save_dir', default='./audio_data',
                         help='where to save .wav & recorder.tsv files (default: %(default)s)')
     parser.add_argument('-c', '--prompts_count', type=int, default=100,
                         help='number of prompts to select and display (default: %(default)s)')

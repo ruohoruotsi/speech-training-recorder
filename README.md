@@ -1,4 +1,4 @@
-# speech-training-recorder
+# Speech Training Recorder
 
 > Simple GUI application to help record audio dictated from given text
 prompts, for use with training speech recognition or speech synthesis.
@@ -11,22 +11,37 @@ and/or re-record it.
 
 ![Screenshot](.github/screenshot.png)
 
-**Requirements:**
+## Requirements
 
 * Python 3
-* See [`requirements.txt`](requirements.txt) for required packages
-* Cross platform: Windows, Linux, MacOS
+* See [`requirements.txt`](requirements.txt) for specific packages
+* Cross platform: Linux, MacOS, Windows (not-tested)
 
-## Getting Started
+## Developer/Tester Getting Started
 
 ```
 git clone https://github.com/daanzu/speech-training-recorder.git
 cd speech-training-recorder
-mkdir ../audio_data
+mkdir ./audio_data
 pip install -r requirements.txt
-python3 recorder.py -p prompts/timit.txt
+
+python3 recorder.py -p prompts/timit.txt                          # minimum command-line to start
+python3 recorder.py -p prompts/timit.txt -d ~/Desktop/audio-data  # audio file on Desktop (MacOS)
 ```
 
+### Caveats
+Since `pyAudio` has `portAudio` as a dependency, one must first install `portaudio`.
+The easiest way is with
+```
+brew install portaudio
+```
+however if the `portaudio` library is installed in a custom location (manually or via `macports`) then to specify the 
+location of headers and libraries, pip needs the following command, `/opt/local/*` being the custom location:
+```
+pip install --global-option='build_ext' --global-option='-I/opt/local/include' --global-option='-L/opt/local/lib' pyaudio
+```
+
+## Usage
 ```
 usage: recorder.py [-h] [-p PROMPTS_FILENAME] [-d SAVE_DIR] [-c PROMPTS_COUNT]
                    [-l PROMPT_LEN_SOFT_MAX] [-o]
