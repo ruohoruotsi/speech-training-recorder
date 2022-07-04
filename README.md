@@ -23,20 +23,23 @@ and/or re-record it.
 git clone https://github.com/daanzu/speech-training-recorder.git
 cd speech-training-recorder
 mkdir ./audio_data
-pip install -r requirements.txt
+CPPFLAGS="-I/opt/local/include" LDFLAGS="-L/opt/local/lib" pip install -r requirements.txt
 
 python3 recorder.py -p prompts/timit.txt                          # minimum command-line to start
 python3 recorder.py -p prompts/timit.txt -d ~/Desktop/audio-data  # audio file on Desktop (MacOS)
 ```
 
-### Caveats
+### Caveats and Context
 Since `pyAudio` has `portAudio` as a dependency, one must first install `portaudio`.
 The easiest way is with
 ```
 brew install portaudio
 ```
 however if the `portaudio` library is installed in a custom location (manually or via `macports`) then to specify the 
-location of headers and libraries, pip needs the following command, `/opt/local/*` being the custom location:
+location of headers and libraries, this is why we use `CPPFLAGS` & `LDFLAGS` above with `pip`. 
+
+More generally, `pip` needs to know where to look, e.g. in `/opt/local/*` to build an external dependency. A standalone 
+`pip` command to accomplish this with `--global-option`:
 ```
 pip install --global-option='build_ext' --global-option='-I/opt/local/include' --global-option='-L/opt/local/lib' pyaudio
 ```
